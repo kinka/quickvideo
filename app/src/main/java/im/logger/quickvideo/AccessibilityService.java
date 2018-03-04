@@ -22,6 +22,7 @@ public class AccessibilityService extends BaseAccessibilityService {
     private boolean onekey = false;
     private boolean searching = false;
     private String nickname = "Kinka";
+    boolean notTargetUI = false;
 
     private final static String Tag = "kk";
     @Override
@@ -36,6 +37,18 @@ public class AccessibilityService extends BaseAccessibilityService {
 
                 if (rootNode == null) break;
                 if (!rootNode.getPackageName().toString().equals(MM_PNAME)) break;
+
+                if (notTargetUI) {
+                    if (findButton(rootNode, "搜索", true) == null) {
+                        performBackClick();
+                        break;
+                    }
+                    else {
+                        findEditText(rootNode, nickname);
+                        notTargetUI = false;
+                        break;
+                    }
+                }
 
                 if (searching) {
                     List<AccessibilityNodeInfo> nodeList = rootNode.findAccessibilityNodeInfosByText(nickname);
@@ -70,18 +83,21 @@ public class AccessibilityService extends BaseAccessibilityService {
 //                Toast.makeText(getApplicationContext(), clsName + "_" + pkgName, Toast.LENGTH_SHORT).show();
 
                 if (pkgName.startsWith(MM_PNAME)) { // 微信的界面
-
                     Object[] vs = getValue();
+                    boolean fromQuickVideo = (Boolean) vs[0];
                     nickname = (String) vs[1];
 
-                    if (!onekey && (Boolean) vs[0]) {
+                    if (!onekey && fromQuickVideo) {
                         onekey = true;
                         setValue(false);
 
-                        findButton(rootNode, "搜索", true);
+                        if (findButton(rootNode, "搜索", true) == null) {
+                            notTargetUI = true;
+                            performBackClick();
+                        }
                     }
 
-                    if (clsName.contains("com.tencent.mm.plugin.search.ui.FTSMainUI")) { // 搜索界面
+                    if (!searching && clsName.contains("com.tencent.mm.plugin.search.ui.FTSMainUI")) { // 搜索界面
                         findEditText(rootNode, nickname);
                         searching = true;
                     }
