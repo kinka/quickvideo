@@ -77,7 +77,9 @@ public class Home extends AppCompatActivity {
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
-//        grantUriPermission();
+        Intent shortcutIndent = getIntent();
+        String strNickname = shortcutIndent.getStringExtra("nickname");
+        if (strNickname != null && strNickname.length() > 0) mAdapter.openApp(strNickname);
     }
 
     private void openApp() {

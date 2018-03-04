@@ -1,11 +1,18 @@
 package im.logger.quickvideo;
 
 import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.v4.content.pm.ShortcutInfoCompat;
+import android.support.v4.content.pm.ShortcutManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -22,6 +29,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 import static android.app.Activity.RESULT_OK;
@@ -81,7 +91,17 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
             @Override
             public void onClick(View view) {
                 mAvatars.remove(position);
+                saveAvatars();
                 notifyDataSetChanged();
+            }
+        });
+
+        holder.btnIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Avatar avatar = mAvatars.get(position);
+                saveAvatars();
+                addShortcut(avatar.nickname, Uri.parse(avatar.url));
             }
         });
     }
@@ -96,8 +116,8 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         notifyDataSetChanged();
     }
 
-    private void openApp(String nickname) {
-        Toast.makeText(this.mAct.getApplicationContext(), nickname, Toast.LENGTH_SHORT).show();
+    public void openApp(String nickname) {
+        Toast.makeText(mAct.getApplicationContext(), nickname, Toast.LENGTH_SHORT).show();
 
         Intent intent = mPackageManager.getLaunchIntentForPackage(AccessibilityService.MM_PNAME);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -125,6 +145,68 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
 //                Toast.makeText(mAct, data.getData().toString(), Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    public void addShortcut(String nickname, Uri uri) {
+        if (ShortcutManagerCompat.isRequestPinShortcutSupported(mAct)) {
+            Intent shortcutInfoIntent = new Intent(mAct, Home.class);
+            shortcutInfoIntent.setAction(Intent.ACTION_VIEW); //action必须设置，不然报错
+            shortcutInfoIntent.putExtra("nickname", nickname);
+
+            Bitmap bitmap = null;
+            try {
+                bitmap = getThumbnail(uri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            ShortcutInfoCompat info = new ShortcutInfoCompat.Builder(mAct, nickname)
+                    .setIcon(bitmap)
+                    .setShortLabel(nickname)
+                    .setIntent(shortcutInfoIntent)
+                    .build();
+
+            // 当添加快捷方式的确认弹框弹出来时，将被回调
+            // TODO 目前receiver 并没有回调成功
+            PendingIntent shortcutCallbackIntent = PendingIntent.getBroadcast(mAct, 0, new Intent(mAct, HomeAdapter.ShortcutReceiver.class), PendingIntent.FLAG_UPDATE_CURRENT);
+            ShortcutManagerCompat.requestPinShortcut(mAct, info, shortcutCallbackIntent.getIntentSender());
+        }
+    }
+
+    // https://stackoverflow.com/a/6228188/1096852
+    public Bitmap getThumbnail(Uri uri) throws FileNotFoundException, IOException{
+        InputStream input = mAct.getContentResolver().openInputStream(uri);
+
+        BitmapFactory.Options onlyBoundsOptions = new BitmapFactory.Options();
+        onlyBoundsOptions.inJustDecodeBounds = true;
+        onlyBoundsOptions.inDither=true;//optional
+        onlyBoundsOptions.inPreferredConfig=Bitmap.Config.ARGB_8888;//optional
+        BitmapFactory.decodeStream(input, null, onlyBoundsOptions);
+        input.close();
+
+        if ((onlyBoundsOptions.outWidth == -1) || (onlyBoundsOptions.outHeight == -1)) {
+            return null;
+        }
+
+        int originalSize = (onlyBoundsOptions.outHeight > onlyBoundsOptions.outWidth) ? onlyBoundsOptions.outHeight : onlyBoundsOptions.outWidth;
+
+        int THUMBNAIL_SIZE = 100;
+        double ratio = (originalSize > THUMBNAIL_SIZE) ? (originalSize / THUMBNAIL_SIZE) : 1.0;
+
+        BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+        bitmapOptions.inSampleSize = getPowerOfTwoForSampleRatio(ratio);
+        bitmapOptions.inDither = true; //optional
+        bitmapOptions.inPreferredConfig=Bitmap.Config.ARGB_8888;//
+        input = mAct.getContentResolver().openInputStream(uri);
+        Bitmap bitmap = BitmapFactory.decodeStream(input, null, bitmapOptions);
+        input.close();
+        return bitmap;
+    }
+
+    private int getPowerOfTwoForSampleRatio(double ratio){
+        int k = Integer.highestOneBit((int)Math.floor(ratio));
+        if(k==0) return 1;
+        else return k;
     }
 
     private void setValue(boolean v, String nickname) {
@@ -169,6 +251,13 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         String jsonStr = settings.getString("avatars", "[]");
         mAvatars = fromJSON(jsonStr);
 //        Toast.makeText(this.mAct.getApplicationContext(), toJSON(mAvatars), Toast.LENGTH_SHORT).show();
+    }
+
+    public static class ShortcutReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Toast.makeText(context.getApplicationContext(), "创建快捷方式成功！", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public static String toJSON(ArrayList<Avatar> avatars) {
