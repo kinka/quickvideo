@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/item_image"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:src="@mipmap/ic_launcher_round"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_constraintBottom_creator="1"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintTop_creator="1" />
+
+    <EditText
+        android:id="@+id/item_nickname"
+        android:layout_width="364dp"
+        android:layout_height="24dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="0dp"
+        android:backgroundTint="@android:color/transparent"
+        android:ems="10"
+        android:focusedByDefault="false"
+        android:hint="微信昵称"
+        android:inputType="text"
+        android:padding="0dp"
+        android:text="Kinka"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/item_image"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/item_delete"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:text="删除"
+        app:layout_constraintBottom_toTopOf="@+id/item_nickname"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.531"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent" />
+
+    <Button
+        android:id="@+id/item_icon"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:text="桌面图标"
+        app:layout_constraintBottom_toTopOf="@+id/item_nickname"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.531"
+        app:layout_constraintRight_toLeftOf="@+id/item_delete"
+        android:layout_marginRight="8dp" />
+
+    <Button
+        android:id="@+id/item_open"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:text="打开微信"
+        app:layout_constraintBottom_toTopOf="@+id/item_nickname"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.531"
+        app:layout_constraintRight_toLeftOf="@+id/item_icon"
+        android:layout_marginRight="8dp" />
+
+</android.support.constraint.ConstraintLayout>

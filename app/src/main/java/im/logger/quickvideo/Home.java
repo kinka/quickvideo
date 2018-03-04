@@ -8,6 +8,10 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
@@ -15,6 +19,9 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 
 public class Home extends AppCompatActivity {
@@ -24,7 +31,9 @@ public class Home extends AppCompatActivity {
     private BaseAccessibilityService as = null;
     private EditText nickName = null;
     private Button btnOpenApp = null;
+    private RecyclerView mRecyclerView = null;
     private PackageManager mPackageManager;
+    private HomeAdapter mAdapter;
 
 
     @Override
@@ -60,6 +69,19 @@ public class Home extends AppCompatActivity {
                 openApp();
             }
         });
+
+        ArrayList<String> data = new ArrayList<>();
+        data.add("haha");
+        data.add("haha2");
+        data.add("haha3");
+        mAdapter = new HomeAdapter(data, this);
+        mRecyclerView = (RecyclerView) findViewById(R.id.list_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+
+//        grantUriPermission();
     }
 
     private void openApp() {
@@ -81,6 +103,11 @@ public class Home extends AppCompatActivity {
         editor.putString("nickname", nickname);
 
         editor.commit();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        mAdapter.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
