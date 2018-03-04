@@ -3,6 +3,7 @@ package im.logger.quickvideo;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -37,9 +38,11 @@ public class Home extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-                as.goAccess();
+                Snackbar.make(view, "发送邮件，联系作者", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                Uri uri = Uri.parse ("mailto: kinka@imweb.io");
+                Intent intent = new Intent (Intent.ACTION_SENDTO, uri);
+                startActivity(intent);
             }
         });
 
@@ -96,6 +99,7 @@ public class Home extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            as.goAccess();
             return true;
         }
 
