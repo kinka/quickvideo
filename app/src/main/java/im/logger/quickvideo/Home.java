@@ -70,11 +70,7 @@ public class Home extends AppCompatActivity {
             }
         });
 
-        ArrayList<String> data = new ArrayList<>();
-        data.add("haha");
-        data.add("haha2");
-        data.add("haha3");
-        mAdapter = new HomeAdapter(data, this);
+        mAdapter = new HomeAdapter(this);
         mRecyclerView = (RecyclerView) findViewById(R.id.list_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setAdapter(mAdapter);
@@ -125,9 +121,13 @@ public class Home extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            as.goAccess();
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                as.goAccess();
+                break;
+            case R.id.action_add:
+                mAdapter.addAvatar();
+                break;
         }
 
         return super.onOptionsItemSelected(item);

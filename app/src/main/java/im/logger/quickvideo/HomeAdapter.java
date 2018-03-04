@@ -29,29 +29,18 @@ import static im.logger.quickvideo.Home.PREFS_NAME;
 
 public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
 
-    private ArrayList<String> mData;
     private AppCompatActivity mAct;
     private PackageManager mPackageManager;
     private ImageView mCurrentImage;
     private int mCurrentIndex;
     private ArrayList<HomeAdapter.Avatar> mAvatars;
 
-    public HomeAdapter(ArrayList<String> data, AppCompatActivity activity) {
-        this.mData = data;
+    public HomeAdapter(AppCompatActivity activity) {
         this.mAct = activity;
 
         mPackageManager = mAct.getPackageManager();
-//        mAvatars = new ArrayList<>();
-//        for (String nickname: data) {
-//            mAvatars.add(new Avatar(nickname, ""));
-//        }
 
         loadAvatars();
-    }
-
-    public void updateData(ArrayList<String> data) {
-        this.mData = data;
-        notifyDataSetChanged();
     }
 
     @Override
@@ -87,11 +76,24 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
                 pickImage(innerHolder.image, position);
             }
         });
+
+        holder.btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mAvatars.remove(position);
+                notifyDataSetChanged();
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return mData == null ? 0 : mData.size();
+        return mAvatars == null ? 0 : mAvatars.size();
+    }
+
+    public void addAvatar() {
+        mAvatars.add(new Avatar("", ""));
+        notifyDataSetChanged();
     }
 
     private void openApp(String nickname) {
@@ -166,7 +168,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         SharedPreferences settings = mAct.getSharedPreferences(PREFS_NAME, 0);
         String jsonStr = settings.getString("avatars", "[]");
         mAvatars = fromJSON(jsonStr);
-        Toast.makeText(this.mAct.getApplicationContext(), toJSON(mAvatars), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this.mAct.getApplicationContext(), toJSON(mAvatars), Toast.LENGTH_SHORT).show();
     }
 
     public static String toJSON(ArrayList<Avatar> avatars) {

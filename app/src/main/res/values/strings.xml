@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">一键视频</string>
     <string name="action_settings">无障碍权限</string>
+    <string name="action_add">添加联系人</string>
 </resources>
