@@ -39,15 +39,14 @@ public class AccessibilityService extends BaseAccessibilityService {
                 if (!rootNode.getPackageName().toString().equals(MM_PNAME)) break;
 
                 if (notTargetUI) {
-                    if (findButton(rootNode, "搜索", true) == null) {
+                    if (findButton(rootNode, "搜索", true) == null && !findEditText(rootNode, "搜索", nickname)) {
+                        searching = false;
                         performBackClick();
-                        break;
-                    }
-                    else {
-                        findEditText(rootNode, nickname);
+                    } else {
                         notTargetUI = false;
-                        break;
+                        searching = true;
                     }
+                    break;
                 }
 
                 if (searching) {
@@ -94,11 +93,12 @@ public class AccessibilityService extends BaseAccessibilityService {
                         if (findButton(rootNode, "搜索", true) == null) {
                             notTargetUI = true;
                             performBackClick();
+                            break;
                         }
                     }
 
-                    if (!searching && clsName.contains("com.tencent.mm.plugin.search.ui.FTSMainUI")) { // 搜索界面
-                        findEditText(rootNode, nickname);
+                    if (clsName.contains("com.tencent.mm.plugin.search.ui.FTSMainUI")) { // 搜索界面
+                        findEditText(rootNode, "搜索", nickname);
                         searching = true;
                     }
                 } else {
@@ -127,22 +127,18 @@ public class AccessibilityService extends BaseAccessibilityService {
         return res;
     }
 
-    private boolean findEditText(AccessibilityNodeInfo rootNode, String content) {
+    private boolean findEditText(AccessibilityNodeInfo rootNode, String target, String content) {
         int count = rootNode.getChildCount();
         for (int i = 0; i < count; i++) {
             AccessibilityNodeInfo nodeInfo = rootNode.getChild(i);
             if (nodeInfo == null) {
                 continue;
             }
-            CharSequence desc = nodeInfo.getContentDescription();
-            String strDesc = null;
-            if (desc != null) {
-                strDesc = desc.toString();
-                Log.i(Tag, strDesc);
-            }
 
+            String text = nodeInfo.getText() == null ? "" : nodeInfo.getText().toString();
+            if ("android.widget.EditText".equals(nodeInfo.getClassName())
+                    && (target == null || text.contains(target) || text.contains(content))) {
 
-            if ("android.widget.EditText".equals(nodeInfo.getClassName())) {
                 Bundle arguments = new Bundle();
                 arguments.putInt(AccessibilityNodeInfo.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT,
                         AccessibilityNodeInfo.MOVEMENT_GRANULARITY_WORD);
@@ -155,7 +151,8 @@ public class AccessibilityService extends BaseAccessibilityService {
                 nodeInfo.performAction(AccessibilityNodeInfo.ACTION_PASTE);
                 return true;
             }
-            if (findEditText(nodeInfo, content)) {
+
+            if (findEditText(nodeInfo, target, content)) {
                 return true;
             }
         }
