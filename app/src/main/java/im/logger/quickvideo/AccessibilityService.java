@@ -54,9 +54,11 @@ public class AccessibilityService extends BaseAccessibilityService {
                     if (nodeList.size() > 1) { // 出现了搜索结果
 //                        Toast.makeText(getApplicationContext(), nodeList.size() + " size", Toast.LENGTH_SHORT).show();
                         AccessibilityNodeInfo target = nodeList.get(0);
-                        target.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        performViewClick(target.getParent());
                         searching = false;
                     }
+                } else {
+                    searching = findEditText(rootNode, "搜索", nickname);
                 }
 
                 if (hasVideo > 1) {
@@ -90,17 +92,15 @@ public class AccessibilityService extends BaseAccessibilityService {
                         onekey = true;
                         setValue(false);
 
-                        if (findButton(rootNode, "搜索", true) == null) {
+//                        findButton(rootNode, "搜索", true);
+                        if (findButton(rootNode, "搜索", true) == null && !findEditText(rootNode, "搜索", nickname)) {
                             notTargetUI = true;
                             performBackClick();
                             break;
                         }
                     }
 
-                    if (clsName.contains("com.tencent.mm.plugin.search.ui.FTSMainUI")) { // 搜索界面
-                        findEditText(rootNode, "搜索", nickname);
-                        searching = true;
-                    }
+                    searching = findEditText(rootNode, "搜索", nickname);
                 } else {
                     hasVideo = 0;
                     onekey = false;
@@ -114,7 +114,7 @@ public class AccessibilityService extends BaseAccessibilityService {
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean("onekey", v);
 
-        editor.commit();
+        editor.apply();
     }
 
     private Object[] getValue() {
@@ -136,6 +136,7 @@ public class AccessibilityService extends BaseAccessibilityService {
             }
 
             String text = nodeInfo.getText() == null ? "" : nodeInfo.getText().toString();
+
             if ("android.widget.EditText".equals(nodeInfo.getClassName())
                     && (target == null || text.contains(target) || text.contains(content))) {
 
@@ -148,6 +149,7 @@ public class AccessibilityService extends BaseAccessibilityService {
                 ClipData clip = ClipData.newPlainText("label", content);
                 ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 clipboardManager.setPrimaryClip(clip);
+                nodeInfo.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
                 nodeInfo.performAction(AccessibilityNodeInfo.ACTION_PASTE);
                 return true;
             }
@@ -184,7 +186,7 @@ public class AccessibilityService extends BaseAccessibilityService {
                 boolean shouldCheck = clsList.indexOf(clsName) > -1;
                 if (shouldCheck && desc.contains(which)) {
 //                    Toast.makeText(getApplicationContext(), desc, Toast.LENGTH_SHORT).show();
-                    if (shouldClick) nodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                    if (shouldClick) performViewClick(nodeInfo);
                     return nodeInfo;
                 }
             }
@@ -196,11 +198,12 @@ public class AccessibilityService extends BaseAccessibilityService {
     }
 
     private boolean findMoreButton(AccessibilityNodeInfo rootNode) {
-        List<AccessibilityNodeInfo> nodeList = rootNode.findAccessibilityNodeInfosByText("视频聊天");
+        List<AccessibilityNodeInfo> nodeList = rootNode.findAccessibilityNodeInfosByText("视频"); // 视频聊天 or 视频通话
         if (nodeList.size() > 0) {
             AccessibilityNodeInfo videoChat = nodeList.get(0);
             AccessibilityNodeInfo parent = videoChat.getParent();
-            parent.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+            while (parent == null) parent = parent.getParent();
+            performViewClick(parent);
             hasVideo += 1;
             return true;
         }
